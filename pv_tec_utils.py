@@ -1,99 +1,260 @@
+r"""pv_tec_utils is a module that facilitates creating 3D images of data from
+.tec files using ParaView's server manager in Python.
+
+"""
+#==============================================================================
+#
+#   Module:     pv_tec_utils.py
+#   Author:     Ben Lindsay
+#   Date:       9/4/2015
+#
+#==============================================================================
+
+
 from paraview.simple import *
 import numpy as np
 
-def InitRenderView(size):
-    rv = CreateView('RenderView')
-    rv.ViewSize = size
-    rv.Background = [1.0, 1.0, 1.0]
-    return rv
+def GetCenter(tecFile=None):
+    if not tecFile:
+        raise ValueError, "No .tec file name was provided to GetCenter()"
+    # Load data skipping top 3 lines (.tec files have a 3-line header)
+    file = open(tecFile)
+    data = np.loadtxt(file, skiprows=3)
+    file.close()
+    # Get arrays of max and min x,y,z values
+    xyz_max = data.max(axis=0)[:3]
+    xyz_min = data.min(axis=0)[:3]
+    # Return [x_center, y_center, z_center] array
+    center = (xyz_min + xyz_max) / 2.0
+    return list(center)
 
-def ColorSurface(comp, rv, alpha):
-    fname = comp + '.tec'
-    tecReader = TecplotReader(FileNames=[fname])
+# -----------------------------------------------------------------------------
+
+def ColorSurface(tecFile=None, view=None, opacity=1.0):
+    if not tecFile:
+        raise ValueError, "No .tec file name was provided to ColorSurface()"
+    if not view:
+        # If view wasn't provided, get view from server manager
+        # or create new one if one hasn't been created
+        view = GetRenderView()
+    if not view:
+        raise ValueError, "No view was provided to ColorSurface()"
+    # Create a TecplotReader for the input .tec file name
+    tecReader = TecplotReader(FileNames=[tecFile])
     tecReader.DataArrayStatus = ['Real']
-    tecDisplay = Show(tecReader, rv)
+    # Turn on visibility of tecReader object in view
+    tecDisplay = Show(tecReader, view)
+    # Color surface of object by the values of 'Real' column in .tec file
     tecDisplay.Representation = 'Surface'
     ColorBy(tecDisplay, ('POINTS', 'Real'))
+    tecDisplay.Opacity = opacity
     tecDisplay.RescaleTransferFunctionToDataRange(True)
-    tecDisplay.SetScalarBarVisibility(rv, True)
-    tecDisplay.Opacity = alpha
-    rv.ResetCamera()
+    # Turn on color bar as is done by default in Paraview
+    tecDisplay.SetScalarBarVisibility(view, True)
+    # Set color bar text color to black using internal function
+    SetColorBarTextColor([0.0, 0.0, 0.0], view)
+    # Reset the camera so the object fits nicely on the canvas
+    view.ResetCamera()
     return tecDisplay
 
-def MakeContour(comp, rv, isofrac, alpha, color):
-    fname = comp + '.tec'
-    tecReader = TecplotReader(FileNames=[fname])
+# -----------------------------------------------------------------------------
+
+def NewContour(tecFile=None, view=None, isoFrac=0.5,
+               opacity=1.0, color=[0.0, 0.0, 0.0]):
+    if not tecFile:
+        raise ValueError, "No .tec file name was provided to ColorSurface()"
+    if not view:
+        # If view wasn't provided, get view from server manager
+        # or create new one if one hasn't been created
+        view = GetRenderView()
+    if not view:
+        raise ValueError, "No view was provided to ColorSurface()"
+    # Create a TecplotReader for the input .tec file name
+    tecReader = TecplotReader(FileNames=[tecFile])
     tecReader.DataArrayStatus = ['Real']
+    # Create a contour from the TecplotReader object
     contour = Contour(Input=tecReader)
     contour.ContourBy = ['POINTS', 'Real']
-    f = open(fname)
-    X = np.loadtxt(f, skiprows=3) # Load data skipping top 3 lines
-    rhomax = X.max(axis=0)[3] # Get maximum rhoda
-    rhomin = X.min(axis=0)[3] # Get minimum rhoda
-    iso = isofrac * (rhomax + rhomin) # Get rhoda for isosurface
-    contour.Isosurfaces = [iso]
-    contourDisplay = Show(contour, rv)
+    # Open .tec file
+    file = open(tecFile)
+    # Read in data from .tec file skipping the 3-line header
+    # This data can have as many columns as you want, but the first 4 must be
+    # x, y, z, and f(x, y, z) in that order. Currently the 4th column must be
+    # labeled as 'Real'
+    data = np.loadtxt(file, skiprows=3)
+    # Get max and min f values from 4th column
+    fMax = data.max(axis=0)[3]
+    fMin = data.min(axis=0)[3]
+    # Get the f value at which the iso-surface will be drawn based on a
+    # fraction (isoFrac) between the max and min f values
+    fIso = isoFrac * (fMax + fMin) # Get rhoda for isosurface
+    # Create the isosurface and set its color
+    contour.Isosurfaces = [fIso]
+    contourDisplay = Show(contour, view)
     contourDisplay.DiffuseColor = color
-    rv.ResetCamera()
+    contourDisplay.Opacity = opacity
+    # Reset the camera to so the object fits nicely in the canvas, just for
+    # good measure
+    view.ResetCamera()
     return contourDisplay
 
-def MakeSlice(comp, rv, centerVec, normVec):
-    fname = comp + '.tec'
-    tecReader = TecplotReader(FileNames=[fname])
+# -----------------------------------------------------------------------------
+
+def NewSlice(tecFile=None, view=None, originVec=[0.0, 0.0, 0.0],
+             normVec=[1.0, 0.0, 0.0], opacity=1.0):
+    if not tecFile:
+        raise ValueError, "No .tec file name was provided to ColorSurface()"
+    if not view:
+        # If view wasn't provided, get view from server manager
+        # or create new one if one hasn't been created
+        view = GetRenderView()
+    if not view:
+        raise ValueError, "No view was provided to ColorSurface()"
+    # Create a TecplotReader for the input .tec file name
+    tecReader = TecplotReader(FileNames=[tecFile])
     tecReader.DataArrayStatus = ['Real']
+    # Create a slice from the TecplotReader object
     slice = Slice(Input=tecReader)
     slice.SliceType = 'Plane'
-    slice.SliceType.Origin = centerVec
+    # Set the origin about which the slice can pivot
+    slice.SliceType.Origin = originVec
+    # Rotate the slice by setting the normal vector to the plane
     slice.SliceType.Normal = normVec
-    sliceDisplay = Show(slice, rv)
+    # Turn on visibility of slice and set opacity
+    sliceDisplay = Show(slice, view)
+    sliceDisplay.Opacity = opacity
     return sliceDisplay
 
-def BlackColorBarText(rv):
-    rv.ResetCamera()
+# -----------------------------------------------------------------------------
+
+def SetColorBarTextColor(color=[0.0, 0.0, 0.0], view=None):
+    if not view:
+        # If view wasn't provided, get view from server manager
+        # or create new one if one hasn't been created
+        view = GetRenderView()
+    if not view:
+        raise ValueError, "No view was provided to " + \
+                          "SetColorBarTextColor()"
     realLUT = GetColorTransferFunction('Real')
-    realLUTColorBar = GetScalarBar(realLUT, rv)
-    realLUTColorBar.LabelColor = [0.0, 0.0, 0.0]
-    realLUTColorBar.TitleColor = [0.0, 0.0, 0.0]
+    realLUTColorBar = GetScalarBar(realLUT, view)
+    realLUTColorBar.LabelColor = color
+    realLUTColorBar.TitleColor = color
 
-def TurnOffArrows(rv):
-    rv.OrientationAxesVisibility = 0
+# -----------------------------------------------------------------------------
 
-def TurnOffColorbar(tecDisplay, rv):
-    tecDisplay.SetScalarBarVisibility(rv, False)
+def TurnOffColorBar(tecDisplay=None, view=None):
+    if not tecDisplay:
+        raise ValueError, "No tecDisplay object was provided to " + \
+                          "TurnOffColorBar()"
+    if not view:
+        # If view wasn't provided, get view from server manager
+        # or create new one if one hasn't been created
+        view = GetRenderView()
+    if not view:
+        raise ValueError, "No view was provided to TurnOffColorBar()"
+    tecDisplay.SetScalarBarVisibility(view, False)
 
-def RescaleColorbar(tecDisplay, rv, low, high):
-    # get opacity transfer function/opacity map for 'Real'
-    # realPWF = GetOpacityTransferFunction('Real')
-    # realPWF.Points = [-73.36000061035156, 0.0, 0.5, 0.0,
-    #                    307.6000061035156, 1.0, 0.5, 0.0 ]
-    # realPWF.ScalarRangeInitialized = 1
-    
-    # Rescale transfer function
-    # realPWF.RescaleTransferFunction(low, high)
-    
-    # get color legend/bar for realLUT in view renderView1
+# -----------------------------------------------------------------------------
+
+def TurnOnColorBar(tecDisplay=None, view=None):
+    if not tecDisplay:
+        raise ValueError, "No tecDisplay object was provided to " + \
+                          "TurnOnColorBar()"
+    if not view:
+        # If view wasn't provided, get view from server manager
+        # or create new one if one hasn't been created
+        view = GetRenderView()
+    if not view:
+        raise ValueError, "No view was provided to TurnOnColorBar()"
+    tecDisplay.SetScalarBarVisibility(view, True)
+
+# -----------------------------------------------------------------------------
+
+def TurnOffArrows(view=None):
+    if not view:
+        # If view wasn't provided, get view from server manager
+        # or create new one if one hasn't been created
+        view = GetRenderView()
+    if not view:
+        raise ValueError, "No view was provided to TurnOffArrows()"
+    view.OrientationAxesVisibility = 0
+
+# -----------------------------------------------------------------------------
+
+def TurnOnArrows(view=None):
+    if not view:
+        # If view wasn't provided, get view from server manager
+        # or create new one if one hasn't been created
+        view = GetRenderView()
+    if not view:
+        raise ValueError, "No view was provided to TurnOnArrows()"
+    view.OrientationAxesVisibility = 1
+
+# -----------------------------------------------------------------------------
+
+def RescaleColorBar(tecDisplay=None, view=None, low=0.0, high=1.0):
+    if not tecDisplay:
+        raise ValueError, "No tecDisplay object was provided to " + \
+                          "RescaleColorBar()"
+    if not view:
+        # If view wasn't provided, get view from server manager
+        # or create new one if one hasn't been created
+        view = GetRenderView()
+    if not view:
+        raise ValueError, "No view was provided to RescaleColorBar()"
+    # get color legend/bar for realLUT in view
     realLUT = GetColorTransferFunction('Real')
-    # realLUTColorBar = GetScalarBar(realLUT, rv)
-    # realLUTColorBar.Title = 'Real'
-    # realLUTColorBar.ComponentTitle = ''
-    
-    # rescale color and/or opacity maps used to exactly fit the current data range
+    # Tell ParaView not to rescale color maps to exactly fit the data range
     tecDisplay.RescaleTransferFunctionToDataRange(False)
-    
     # Rescale transfer function
     realLUT.RescaleTransferFunction(low, high)
 
-def SetCameraFocus(comp, rv):
-    fname = comp + '.tec'
-    f = open( fname )
-    X = np.loadtxt(f, skiprows=3) # Load data skipping top 3 lines
-    xyz_range = X.max(axis=0)[:3] # Get [max x, max y, max z]
-    camFoc = xyz_range / 2 # Get [center x, center y, center z] by div-ing by 2
-    f.close()
-    rv.CameraFocalPoint = camFoc
-    return camFoc
+# -----------------------------------------------------------------------------
 
-def SetOrientation(camPos, upDir, rv):
-    rv.CameraPosition = camPos
-    rv.CameraViewUp = upDir
-    # rv.CameraParallelScale = 0
+def AutoscaleColorBar(tecDisplay=None):
+    if not tecDisplay:
+        raise ValueError, "No tecDisplay object was provided to " + \
+                          "AutoscaleColorBar()"
+    # Tell ParaView to rescale color maps to exactly fit the data range
+    tecDisplay.RescaleTransferFunctionToDataRange(True)
+
+# -----------------------------------------------------------------------------
+
+def SetCameraFocus(tecFile=None, view=None, camFoc=None):
+    if not tecFile:
+        raise ValueError, "No .tec file name was provided to SetCameraFocus()"
+    if not view:
+        # If view wasn't provided, get view from server manager
+        # or create new one if one hasn't been created
+        view = GetRenderView()
+    if not view:
+        raise ValueError, "No view was provided to SetCameraFocus()"
+    if not camFoc:
+        # If camera focal point [x_foc, y_foc, z_foc] is not provided, set
+        # camFoc to the center point of the data in the provided .tec file
+        camFoc = GetCenter(tecFile)
+    # Set camera focal point
+    view.CameraFocalPoint = camFoc
+
+# -----------------------------------------------------------------------------
+
+def SetOrientation(view=None, camPosDir=[-1.0, 0.0, 0.0],
+                   upDir=[0.0, 0.0, 1.0], resetCamera=True):
+    if not view:
+        # If view wasn't provided, get view from server manager
+        # or create new one if one hasn't been created
+        view = GetRenderView()
+    if not view:
+        raise ValueError, "No view was provided to SetOrientation()"
+    # Get the camera focal point (should have already set this using
+    # SetCameraFocus)
+    camFoc = view.CameraFocalPoint
+    # Set the camera position to the focal point vector + the vector
+    # representing the arrow pointing from the focal point to the camera.
+    # The magnitude of the vector doesn't matter if we're resetting the camera
+    view.CameraPosition = np.array(camFoc) + np.array(camPosDir)
+    # Set the direction that points directly up, i.e. if you want the
+    # z-direction to point up, use upDir = [0.0, 0.0, 1.0]
+    view.CameraViewUp = upDir
+    if resetCamera:
+        view.ResetCamera()
