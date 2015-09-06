@@ -33,4 +33,4 @@ Utilities to facilitate creating 3D images from .tec files in Paraview
       alias pvpython='/Applications/paraview.app/Contents/bin/pvpython'
       ```
       
-      in your `~/.bashrc` file and use that instead of `python` to call your ParaView scripts. This executable already has everything ParaView needs set up in its path.
+      in your `~/.bashrc` file and use `pvpython` instead of `python` to call your ParaView scripts. This executable already has everything ParaView needs set up in its path.
