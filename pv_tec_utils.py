@@ -6,17 +6,20 @@ r"""pv_tec_utils is a module that facilitates creating 3D images of data from
 #
 #   Module:     pv_tec_utils.py
 #   Author:     Ben Lindsay
-#   Date:       9/4/2015
+#   Date:       September 2015
 #
 #==============================================================================
 
 
 from paraview.simple import *
 import numpy as np
+from os.path import isfile
 
 def GetCenter(tecFile=None):
     if not tecFile:
         raise ValueError, "No .tec file name was provided to GetCenter()"
+    if not isfile(tecFile):
+        raise IOError, "%s does not exist" % tecFile
     # Load data skipping top 3 lines (.tec files have a 3-line header)
     file = open(tecFile)
     data = np.loadtxt(file, skiprows=3)
@@ -33,6 +36,8 @@ def GetCenter(tecFile=None):
 def ColorSurface(tecFile=None, view=None, opacity=1.0):
     if not tecFile:
         raise ValueError, "No .tec file name was provided to ColorSurface()"
+    if not isfile(tecFile):
+        raise IOError, "%s does not exist" % tecFile
     if not view:
         # If view wasn't provided, get view from server manager
         # or create new one if one hasn't been created
@@ -63,6 +68,8 @@ def NewContour(tecFile=None, view=None, isoFrac=0.5,
                opacity=1.0, color=[0.0, 0.0, 0.0]):
     if not tecFile:
         raise ValueError, "No .tec file name was provided to ColorSurface()"
+    if not isfile(tecFile):
+        raise IOError, "%s does not exist" % tecFile
     if not view:
         # If view wasn't provided, get view from server manager
         # or create new one if one hasn't been created
@@ -104,6 +111,8 @@ def NewSlice(tecFile=None, view=None, originVec=[0.0, 0.0, 0.0],
              normVec=[1.0, 0.0, 0.0], opacity=1.0):
     if not tecFile:
         raise ValueError, "No .tec file name was provided to ColorSurface()"
+    if not isfile(tecFile):
+        raise IOError, "%s does not exist" % tecFile
     if not view:
         # If view wasn't provided, get view from server manager
         # or create new one if one hasn't been created
@@ -223,6 +232,8 @@ def AutoscaleColorBar(tecDisplay=None):
 def SetCameraFocus(tecFile=None, view=None, camFoc=None):
     if not tecFile:
         raise ValueError, "No .tec file name was provided to SetCameraFocus()"
+    if not isfile(tecFile):
+        raise IOError, "%s does not exist" % tecFile
     if not view:
         # If view wasn't provided, get view from server manager
         # or create new one if one hasn't been created
