@@ -4,7 +4,7 @@ Utilities to facilitate creating 3D images from .tec files in Paraview
 
 ### Installation
 
-1. Copy pv_tec_utils.py into a folder in your PYTHONPATH.
+1. Copy pv_tec_utils.py into a folder in your `PYTHONPATH`.
 
 2. Install [ParaView](http://www.paraview.org/download/) if you have not already done so.
 
