@@ -15,6 +15,12 @@ from paraview.simple import *
 import numpy as np
 from os.path import isfile
 
+def InitView(viewSize=[700, 500], color=[1.0, 1.0, 1.0], clean=True):
+    view = CreateRenderView(ViewSize=viewSize, Background=color)
+    if clean:
+        view.OrientationAxesVisibility = 0
+    return view
+
 def GetCenter(tecFile=None):
     if not tecFile:
         raise ValueError, "No .tec file name was provided to GetCenter()"
@@ -33,7 +39,7 @@ def GetCenter(tecFile=None):
 
 # -----------------------------------------------------------------------------
 
-def ColorSurface(tecFile=None, view=None, opacity=1.0):
+def ColorSurface(tecFile=None, view=None, opacity=1.0, clean=True):
     if not tecFile:
         raise ValueError, "No .tec file name was provided to ColorSurface()"
     if not isfile(tecFile):
@@ -54,10 +60,11 @@ def ColorSurface(tecFile=None, view=None, opacity=1.0):
     ColorBy(tecDisplay, ('POINTS', 'Real'))
     tecDisplay.Opacity = opacity
     tecDisplay.RescaleTransferFunctionToDataRange(True)
-    # Turn on color bar as is done by default in Paraview
-    tecDisplay.SetScalarBarVisibility(view, True)
-    # Set color bar text color to black using internal function
-    SetColorBarTextColor([0.0, 0.0, 0.0], view)
+    if not clean:
+        # Turn on color bar as is done by default in Paraview
+        tecDisplay.SetScalarBarVisibility(view, True)
+        # Set color bar text color to black using internal function
+        SetColorBarTextColor([0.0, 0.0, 0.0], view)
     # Reset the camera so the object fits nicely on the canvas
     view.ResetCamera()
     return tecDisplay
@@ -108,7 +115,7 @@ def NewContour(tecFile=None, view=None, isoFrac=0.5,
 # -----------------------------------------------------------------------------
 
 def NewSlice(tecFile=None, view=None, originVec=None,
-             normVec=[1.0, 0.0, 0.0], opacity=1.0):
+             normVec=[1.0, 0.0, 0.0], opacity=1.0, clean=True):
     if not tecFile:
         raise ValueError, "No .tec file name was provided to NewSlice()"
     if not isfile(tecFile):
@@ -138,10 +145,11 @@ def NewSlice(tecFile=None, view=None, originVec=None,
     sliceDisplay.Opacity = opacity
     # Rescale color bar to fit data range
     sliceDisplay.RescaleTransferFunctionToDataRange(True)
-    # Turn on color bar as is done by default in Paraview
-    sliceDisplay.SetScalarBarVisibility(view, True)
-    # Set color bar text color to black using internal function
-    SetColorBarTextColor([0.0, 0.0, 0.0], view)
+    if not clean:
+        # Turn on color bar as is done by default in Paraview
+        sliceDisplay.SetScalarBarVisibility(view, True)
+        # Set color bar text color to black using internal function
+        SetColorBarTextColor([0.0, 0.0, 0.0], view)
     # Reset the camera so the object fits nicely on the canvas
     view.ResetCamera()
     return sliceDisplay
