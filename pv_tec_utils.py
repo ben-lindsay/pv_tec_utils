@@ -67,7 +67,7 @@ def ColorSurface(tecFile=None, view=None, opacity=1.0):
 def NewContour(tecFile=None, view=None, isoFrac=0.5,
                opacity=1.0, color=[0.0, 0.0, 0.0]):
     if not tecFile:
-        raise ValueError, "No .tec file name was provided to ColorSurface()"
+        raise ValueError, "No .tec file name was provided to NewContour()"
     if not isfile(tecFile):
         raise IOError, "%s does not exist" % tecFile
     if not view:
@@ -75,7 +75,7 @@ def NewContour(tecFile=None, view=None, isoFrac=0.5,
         # or create new one if one hasn't been created
         view = GetRenderView()
     if not view:
-        raise ValueError, "No view was provided to ColorSurface()"
+        raise ValueError, "No view was provided to NewContour()"
     # Create a TecplotReader for the input .tec file name
     tecReader = TecplotReader(FileNames=[tecFile])
     tecReader.DataArrayStatus = ['Real']
@@ -110,7 +110,7 @@ def NewContour(tecFile=None, view=None, isoFrac=0.5,
 def NewSlice(tecFile=None, view=None, originVec=[0.0, 0.0, 0.0],
              normVec=[1.0, 0.0, 0.0], opacity=1.0):
     if not tecFile:
-        raise ValueError, "No .tec file name was provided to ColorSurface()"
+        raise ValueError, "No .tec file name was provided to NewSlice()"
     if not isfile(tecFile):
         raise IOError, "%s does not exist" % tecFile
     if not view:
@@ -118,7 +118,7 @@ def NewSlice(tecFile=None, view=None, originVec=[0.0, 0.0, 0.0],
         # or create new one if one hasn't been created
         view = GetRenderView()
     if not view:
-        raise ValueError, "No view was provided to ColorSurface()"
+        raise ValueError, "No view was provided to NewSlice()"
     # Create a TecplotReader for the input .tec file name
     tecReader = TecplotReader(FileNames=[tecFile])
     tecReader.DataArrayStatus = ['Real']
