@@ -132,9 +132,18 @@ def NewSlice(tecFile=None, view=None, originVec=None,
     slice.SliceType.Origin = originVec
     # Rotate the slice by setting the normal vector to the plane
     slice.SliceType.Normal = normVec
-    # Turn on visibility of slice and set opacity
+    # Turn on visibility of slice, color, and set opacity
     sliceDisplay = Show(slice, view)
+    ColorBy(sliceDisplay, ('POINTS', 'Real'))
     sliceDisplay.Opacity = opacity
+    # Rescale color bar to fit data range
+    sliceDisplay.RescaleTransferFunctionToDataRange(True)
+    # Turn on color bar as is done by default in Paraview
+    sliceDisplay.SetScalarBarVisibility(view, True)
+    # Set color bar text color to black using internal function
+    SetColorBarTextColor([0.0, 0.0, 0.0], view)
+    # Reset the camera so the object fits nicely on the canvas
+    view.ResetCamera()
     return sliceDisplay
 
 # -----------------------------------------------------------------------------
