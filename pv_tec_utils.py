@@ -107,7 +107,7 @@ def NewContour(tecFile=None, view=None, isoFrac=0.5,
 
 # -----------------------------------------------------------------------------
 
-def NewSlice(tecFile=None, view=None, originVec=[0.0, 0.0, 0.0],
+def NewSlice(tecFile=None, view=None, originVec=None,
              normVec=[1.0, 0.0, 0.0], opacity=1.0):
     if not tecFile:
         raise ValueError, "No .tec file name was provided to NewSlice()"
@@ -119,6 +119,9 @@ def NewSlice(tecFile=None, view=None, originVec=[0.0, 0.0, 0.0],
         view = GetRenderView()
     if not view:
         raise ValueError, "No view was provided to NewSlice()"
+    if type(originVec)==NoneType:
+        # If originVec wasn't provided, use the center
+        originVec = GetCenter(tecFile)
     # Create a TecplotReader for the input .tec file name
     tecReader = TecplotReader(FileNames=[tecFile])
     tecReader.DataArrayStatus = ['Real']
