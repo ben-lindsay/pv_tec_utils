@@ -119,7 +119,7 @@ def NewSlice(tecFile=None, view=None, originVec=None,
         view = GetRenderView()
     if not view:
         raise ValueError, "No view was provided to NewSlice()"
-    if type(originVec)==NoneType:
+    if type(originVec)==type(None):
         # If originVec wasn't provided, use the center
         originVec = GetCenter(tecFile)
     # Create a TecplotReader for the input .tec file name
