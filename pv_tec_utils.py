@@ -15,10 +15,11 @@ from paraview.simple import *
 import numpy as np
 from os.path import isfile
 
-def InitView(viewSize=[700, 500], color=[1.0, 1.0, 1.0], clean=True):
+def InitView(viewSize=[700, 500], color=[1.0, 1.0, 1.0], noAxisArrows=True):
     view = CreateRenderView(ViewSize=viewSize, Background=color)
-    if clean:
+    if noAxisArrows:
         view.OrientationAxesVisibility = 0
+    view.UseOffscreenRendering = 1
     return view
 
 def GetCenter(tecFile=None):
@@ -39,7 +40,7 @@ def GetCenter(tecFile=None):
 
 # -----------------------------------------------------------------------------
 
-def ColorSurface(tecFile=None, view=None, opacity=1.0, clean=True):
+def ColorSurface(tecFile=None, view=None, opacity=1.0, showColorBar=False):
     if not tecFile:
         raise ValueError, "No .tec file name was provided to ColorSurface()"
     if not isfile(tecFile):
@@ -60,7 +61,7 @@ def ColorSurface(tecFile=None, view=None, opacity=1.0, clean=True):
     ColorBy(tecDisplay, ('POINTS', 'Real'))
     tecDisplay.Opacity = opacity
     tecDisplay.RescaleTransferFunctionToDataRange(True)
-    if not clean:
+    if showColorBar:
         # Turn on color bar as is done by default in Paraview
         tecDisplay.SetScalarBarVisibility(view, True)
         # Set color bar text color to black using internal function
@@ -115,7 +116,7 @@ def NewContour(tecFile=None, view=None, isoFrac=0.5,
 # -----------------------------------------------------------------------------
 
 def NewSlice(tecFile=None, view=None, originVec=None,
-             normVec=[1.0, 0.0, 0.0], opacity=1.0, clean=True):
+             normVec=[1.0, 0.0, 0.0], opacity=1.0, showColorBar=False):
     if not tecFile:
         raise ValueError, "No .tec file name was provided to NewSlice()"
     if not isfile(tecFile):
@@ -145,7 +146,7 @@ def NewSlice(tecFile=None, view=None, originVec=None,
     sliceDisplay.Opacity = opacity
     # Rescale color bar to fit data range
     sliceDisplay.RescaleTransferFunctionToDataRange(True)
-    if not clean:
+    if showColorBar:
         # Turn on color bar as is done by default in Paraview
         sliceDisplay.SetScalarBarVisibility(view, True)
         # Set color bar text color to black using internal function
@@ -199,24 +200,24 @@ def TurnOnColorBar(tecDisplay=None, view=None):
 
 # -----------------------------------------------------------------------------
 
-def TurnOffArrows(view=None):
+def TurnOffAxisArrows(view=None):
     if not view:
         # If view wasn't provided, get view from server manager
         # or create new one if one hasn't been created
         view = GetRenderView()
     if not view:
-        raise ValueError, "No view was provided to TurnOffArrows()"
+        raise ValueError, "No view was provided to TurnOffAxisArrows()"
     view.OrientationAxesVisibility = 0
 
 # -----------------------------------------------------------------------------
 
-def TurnOnArrows(view=None):
+def TurnOnAxisArrows(view=None):
     if not view:
         # If view wasn't provided, get view from server manager
         # or create new one if one hasn't been created
         view = GetRenderView()
     if not view:
-        raise ValueError, "No view was provided to TurnOnArrows()"
+        raise ValueError, "No view was provided to TurnOnAxisArrows()"
     view.OrientationAxesVisibility = 1
 
 # -----------------------------------------------------------------------------
