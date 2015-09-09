@@ -15,11 +15,13 @@ from paraview.simple import *
 import numpy as np
 from os.path import isfile
 
-def InitView(viewSize=[700, 500], color=[1.0, 1.0, 1.0], noAxisArrows=True):
+def InitView(viewSize=[700, 500], color=[1.0, 1.0, 1.0], noAxisArrows=True,
+             offScreenRender=True):
     view = CreateRenderView(ViewSize=viewSize, Background=color)
     if noAxisArrows:
         view.OrientationAxesVisibility = 0
-    view.UseOffscreenRendering = 1
+    if offScreenRender:
+        view.UseOffscreenRendering = 1
     return view
 
 def GetCenter(tecFile=None):
