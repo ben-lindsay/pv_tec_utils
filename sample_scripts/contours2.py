@@ -1,4 +1,4 @@
-import pv_tec_utils as utils 
+import pv_utils as utils 
 import paraview.simple as pv
 
 rdaTec = 'data/rhoda.tec'

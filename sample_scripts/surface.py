@@ -1,4 +1,4 @@
-import pv_tec_utils as utils 
+import pv_utils as utils 
 import paraview.simple as pv
 
 center = utils.GetCenter(tecFile='data/rhoda.tec')
