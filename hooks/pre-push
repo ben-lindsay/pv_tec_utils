@@ -1,0 +1,2 @@
+echo "Copying Python files to $HOME/usr/site-packages"
+cp -v *.py $HOME/usr/site-packages
