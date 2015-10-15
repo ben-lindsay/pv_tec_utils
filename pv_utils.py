@@ -1,12 +1,12 @@
-r"""pv_tec_utils is a module that facilitates creating 3D images of data from
+r"""pv_utils is a module that facilitates creating 3D images of data from
 .tec files using ParaView's server manager in Python.
 
 """
 #==============================================================================
 #
-#   Module:     pv_tec_utils.py
+#   Module:     pv_utils.py
 #   Author:     Ben Lindsay
-#   Date:       September 2015
+#   Date:       October 2015
 #
 #==============================================================================
 
@@ -20,8 +20,8 @@ def InitView(viewSize=[700, 500], color=[1.0, 1.0, 1.0], noAxisArrows=True,
     view = CreateRenderView(ViewSize=viewSize, Background=color)
     if noAxisArrows:
         view.OrientationAxesVisibility = 0
-    if offScreenRender:
-        view.UseOffscreenRendering = 1
+    #if offScreenRender:
+    #    view.UseOffscreenRendering = 1
     return view
 
 def GetCenter(tecFile=None):
