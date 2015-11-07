@@ -14,14 +14,15 @@ r"""pv_utils is a module that facilitates creating 3D images of data from
 from paraview.simple import *
 import numpy as np
 from os.path import isfile
+from os import getenv
 
 def InitView(viewSize=[700, 500], color=[1.0, 1.0, 1.0], noAxisArrows=True,
              offScreenRender=True):
     view = CreateRenderView(ViewSize=viewSize, Background=color)
     if noAxisArrows:
         view.OrientationAxesVisibility = 0
-    #if offScreenRender:
-    #    view.UseOffscreenRendering = 1
+    if offScreenRender & (getenv('HOSTNAME_SHORT')!='darter'):
+        view.UseOffscreenRendering = 1
     return view
 
 def GetCenter(tecFile=None):
