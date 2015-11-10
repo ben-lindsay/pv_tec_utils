@@ -21,8 +21,8 @@ def InitView(viewSize=[700, 500], color=[1.0, 1.0, 1.0], noAxisArrows=True,
     view = CreateRenderView(ViewSize=viewSize, Background=color)
     if noAxisArrows:
         view.OrientationAxesVisibility = 0
-    if offScreenRender & (getenv('HOSTNAME_SHORT')!='darter'):
-        view.UseOffscreenRendering = 1
+    #if offScreenRender & (getenv('HOSTNAME_SHORT')!='darter'):
+    #    view.UseOffscreenRendering = 1
     return view
 
 def GetCenter(tecFile=None):
@@ -147,8 +147,11 @@ def NewSlice(tecFile=None, view=None, originVec=None,
     sliceDisplay = Show(slice, view)
     ColorBy(sliceDisplay, ('POINTS', 'Real'))
     sliceDisplay.Opacity = opacity
-    # Rescale color bar to fit data range
-    sliceDisplay.RescaleTransferFunctionToDataRange(True)
+    # Rescale color bar to fit data range. I don't understand why 'False' is
+    # the argument to put in here, but it seems to work, while 'True' seems to
+    # leave everything scaled the same way the first slice was scaled if
+    # multiple slices are taken in the same session.
+    sliceDisplay.RescaleTransferFunctionToDataRange(False)
     if showColorBar:
         # Turn on color bar as is done by default in Paraview
         sliceDisplay.SetScalarBarVisibility(view, True)
