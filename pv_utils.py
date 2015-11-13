@@ -43,7 +43,8 @@ def GetCenter(tecFile=None):
 
 # -----------------------------------------------------------------------------
 
-def ColorSurface(tecFile=None, view=None, opacity=1.0, showColorBar=False):
+def ColorSurface(tecFile=None, view=None, opacity=1.0, showColorBar=False,
+                 rtf=False):
     if not tecFile:
         raise ValueError, "No .tec file name was provided to ColorSurface()"
     if not isfile(tecFile):
@@ -63,7 +64,7 @@ def ColorSurface(tecFile=None, view=None, opacity=1.0, showColorBar=False):
     tecDisplay.Representation = 'Surface'
     ColorBy(tecDisplay, ('POINTS', 'Real'))
     tecDisplay.Opacity = opacity
-    tecDisplay.RescaleTransferFunctionToDataRange(True)
+    tecDisplay.RescaleTransferFunctionToDataRange(rtf)
     if showColorBar:
         # Turn on color bar as is done by default in Paraview
         tecDisplay.SetScalarBarVisibility(view, True)
@@ -118,8 +119,8 @@ def NewContour(tecFile=None, view=None, isoFrac=0.5,
 
 # -----------------------------------------------------------------------------
 
-def NewSlice(tecFile=None, view=None, originVec=None,
-             normVec=[1.0, 0.0, 0.0], opacity=1.0, showColorBar=False):
+def NewSlice(tecFile=None, view=None, originVec=None, normVec=[1.0, 0.0, 0.0],
+             opacity=1.0, showColorBar=False, rtf=False):
     if not tecFile:
         raise ValueError, "No .tec file name was provided to NewSlice()"
     if not isfile(tecFile):
@@ -151,7 +152,7 @@ def NewSlice(tecFile=None, view=None, originVec=None,
     # the argument to put in here, but it seems to work, while 'True' seems to
     # leave everything scaled the same way the first slice was scaled if
     # multiple slices are taken in the same session.
-    sliceDisplay.RescaleTransferFunctionToDataRange(False)
+    sliceDisplay.RescaleTransferFunctionToDataRange(rtf)
     if showColorBar:
         # Turn on color bar as is done by default in Paraview
         sliceDisplay.SetScalarBarVisibility(view, True)
