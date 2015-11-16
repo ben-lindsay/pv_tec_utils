@@ -120,7 +120,7 @@ def NewContour(tecFile=None, view=None, isoFrac=0.5,
 # -----------------------------------------------------------------------------
 
 def NewSlice(tecFile=None, view=None, originVec=None, normVec=[1.0, 0.0, 0.0],
-             opacity=1.0, showColorBar=False, rtf=False):
+             opacity=1.0, showColorBar=False, rtf=False, logscale=False):
     if not tecFile:
         raise ValueError, "No .tec file name was provided to NewSlice()"
     if not isfile(tecFile):
@@ -148,6 +148,11 @@ def NewSlice(tecFile=None, view=None, originVec=None, normVec=[1.0, 0.0, 0.0],
     sliceDisplay = Show(slice, view)
     ColorBy(sliceDisplay, ('POINTS', 'Real'))
     sliceDisplay.Opacity = opacity
+    if logscale:
+        # Convert slice coloring to log scale (PMF-like) if logscale=True
+        realLUT = GetColorTransferFunction('Real')
+        realLUT.MapControlPointsToLogSpace()
+        realLUT.UseLogScale = 1
     # Rescale color bar to fit data range. I don't understand why 'False' is
     # the argument to put in here, but it seems to work, while 'True' seems to
     # leave everything scaled the same way the first slice was scaled if
