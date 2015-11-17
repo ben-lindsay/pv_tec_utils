@@ -120,7 +120,8 @@ def NewContour(tecFile=None, view=None, isoFrac=0.5,
 # -----------------------------------------------------------------------------
 
 def NewSlice(tecFile=None, view=None, originVec=None, normVec=[1.0, 0.0, 0.0],
-             opacity=1.0, showColorBar=False, rtf=False, logscale=False):
+             opacity=1.0, showColorBar=False, rtf=False, logScale=False,
+             logRange=30, rhoMax=1.0, rhoInf=None, findRhoInf=False):
     if not tecFile:
         raise ValueError, "No .tec file name was provided to NewSlice()"
     if not isfile(tecFile):
@@ -148,16 +149,29 @@ def NewSlice(tecFile=None, view=None, originVec=None, normVec=[1.0, 0.0, 0.0],
     sliceDisplay = Show(slice, view)
     ColorBy(sliceDisplay, ('POINTS', 'Real'))
     sliceDisplay.Opacity = opacity
-    if logscale:
+    if logScale:
         # Convert slice coloring to log scale (PMF-like) if logscale=True
         realLUT = GetColorTransferFunction('Real')
         realLUT.MapControlPointsToLogSpace()
         realLUT.UseLogScale = 1
+        if findRhoInf:
+            import tec_utils as tu
+            data = tu.get_struct_3d(tecFile)
+            z, rhoLine = data.get_midline()
+            rhoInf = rhoLine[0]
+        if not rhoInf:
+            rhoMin = rhoMax * 10**(-logRange)
+        else:
+            rhoMin = rhoInf * 10**(-0.5*logRange)
+            rhoMax = rhoInf * 10**(0.5*logRange)
+        print "rhoMin =", rhoMin, "rhoMax =", rhoMax
+        realLUT.RescaleTransferFunction(rhoMin, rhoMax)
     # Rescale color bar to fit data range. I don't understand why 'False' is
     # the argument to put in here, but it seems to work, while 'True' seems to
     # leave everything scaled the same way the first slice was scaled if
     # multiple slices are taken in the same session.
-    sliceDisplay.RescaleTransferFunctionToDataRange(rtf)
+    else:
+        sliceDisplay.RescaleTransferFunctionToDataRange(rtf)
     if showColorBar:
         # Turn on color bar as is done by default in Paraview
         sliceDisplay.SetScalarBarVisibility(view, True)
