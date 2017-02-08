@@ -76,7 +76,7 @@ def ColorSurface(tecFile=None, view=None, opacity=1.0, showColorBar=False,
 
 # -----------------------------------------------------------------------------
 
-def NewContour(tecFile=None, view=None, isoFrac=0.5,
+def NewContour(tecFile=None, view=None, isoFrac=0.5, isoVal=None,
                opacity=1.0, color=[0.796, 0.784, 0.753]):
     if not tecFile:
         raise ValueError, "No .tec file name was provided to NewContour()"
@@ -94,21 +94,20 @@ def NewContour(tecFile=None, view=None, isoFrac=0.5,
     # Create a contour from the TecplotReader object
     contour = Contour(Input=tecReader)
     contour.ContourBy = ['POINTS', 'Real']
-    # Open .tec file
-    file = open(tecFile)
-    # Read in data from .tec file skipping the 3-line header
-    # This data can have as many columns as you want, but the first 4 must be
-    # x, y, z, and f(x, y, z) in that order. Currently the 4th column must be
-    # labeled as 'Real'
-    data = np.loadtxt(file, skiprows=3)
-    # Get max and min f values from 4th column
-    fMax = data.max(axis=0)[3]
-    fMin = data.min(axis=0)[3]
-    # Get the f value at which the iso-surface will be drawn based on a
-    # fraction (isoFrac) between the max and min f values
-    fIso = isoFrac * (fMax + fMin) # Get rhoda for isosurface
+    if not isoVal:
+        # Read in data from .tec file skipping the 3-line header
+        # This data can have as many columns as you want, but the first 4 must be
+        # x, y, z, and f(x, y, z) in that order. Currently the 4th column must be
+        # labeled as 'Real'
+        data = np.loadtxt(tecFile, skiprows=3)
+        # Get max and min f values from 4th column
+        fMax = data.max(axis=0)[3]
+        fMin = data.min(axis=0)[3]
+        # Get the f value at which the iso-surface will be drawn based on a
+        # fraction (isoFrac) between the max and min f values
+        isoVal = isoFrac * (fMax - fMin) + fMin # Get rhoda for isosurface
     # Create the isosurface and set its color
-    contour.Isosurfaces = [fIso]
+    contour.Isosurfaces = [isoVal]
     contourDisplay = Show(contour, view)
     contourDisplay.DiffuseColor = color
     contourDisplay.Opacity = opacity
